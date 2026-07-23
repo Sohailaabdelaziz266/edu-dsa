@@ -1,0 +1,25 @@
+# Build artifacts
+build/
+cmake-build-*/
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+*.out
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Test / coverage
+*.gcov
+*.gcda
+*.gcno
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
