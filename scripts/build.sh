@@ -5,25 +5,19 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 ASSIGNMENT="${1:-SWB-04}"
-STUDENT="${2:-example-student}"
-SUBMISSION="${3:-}"
-BUILD_SUFFIX="${ASSIGNMENT}/${STUDENT}"
-BUILD_DIR="${ROOT_DIR}/build/${BUILD_SUFFIX}"
+BUILD_DIR="${ROOT_DIR}/build/${ASSIGNMENT}"
 
-CMAKE_ARGS=(
-    -S .
-    -B "$BUILD_DIR"
-    -DEDU_ASSIGNMENT="$ASSIGNMENT"
-)
+CMAKE_ARGS=(-S . -B "$BUILD_DIR" -DEDU_ASSIGNMENT="$ASSIGNMENT")
 
-if [[ -n "$SUBMISSION" ]]; then
-    CMAKE_ARGS+=(-DEDU_SUBMISSION="$SUBMISSION")
-    BUILD_SUFFIX="${SUBMISSION//\//-}"
-    BUILD_DIR="${ROOT_DIR}/build/${BUILD_SUFFIX}"
-    CMAKE_ARGS=(-S . -B "$BUILD_DIR" -DEDU_ASSIGNMENT="$ASSIGNMENT" -DEDU_SUBMISSION="$SUBMISSION")
+if [[ -n "${EDU_STUDENTS:-}" ]]; then
+    CMAKE_ARGS+=(-DEDU_STUDENTS="$EDU_STUDENTS")
 fi
 
-echo "Building assignment=${ASSIGNMENT} submission=${SUBMISSION:-${ASSIGNMENT}/${STUDENT}}"
+if [[ -n "${EDU_EXTRA_SUBMISSIONS:-}" ]]; then
+    CMAKE_ARGS+=(-DEDU_EXTRA_SUBMISSIONS="$EDU_EXTRA_SUBMISSIONS")
+fi
+
+echo "Building assignment=${ASSIGNMENT} (one test suite, one binary per submission)"
 
 cmake "${CMAKE_ARGS[@]}"
 cmake --build "$BUILD_DIR" --parallel

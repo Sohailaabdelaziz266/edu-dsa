@@ -16,11 +16,20 @@ if(NOT ASSIGNMENT_TESTS)
     message(FATAL_ERROR "No Google Test files found for assignment ${EDU_ASSIGNMENT}")
 endif()
 
-foreach(test_source ${ASSIGNMENT_TESTS})
+foreach(test_source IN LISTS ASSIGNMENT_TESTS)
     get_filename_component(test_name ${test_source} NAME_WE)
 
-    add_executable(${test_name} ${test_source})
-    target_link_libraries(${test_name} PRIVATE student_submission GTest::gtest_main)
+    foreach(submission_id IN LISTS EDU_SUBMISSION_IDS)
+        set(test_target "${test_name}_${submission_id}")
 
-    add_test(NAME ${test_name} COMMAND ${test_name})
+        add_executable(${test_target} ${test_source})
+        target_link_libraries(
+            ${test_target}
+            PRIVATE
+                submission_${submission_id}
+                GTest::gtest_main
+        )
+
+        add_test(NAME ${test_target} COMMAND ${test_target})
+    endforeach()
 endforeach()

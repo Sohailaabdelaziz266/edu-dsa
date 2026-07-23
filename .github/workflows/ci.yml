@@ -11,15 +11,9 @@ on:
         description: Assignment id used to select tests (e.g. SWB-04)
         required: true
         default: SWB-04
-      submission:
-        description: Submission path (e.g. dev/reference or SWB-04/john-doe)
-        required: true
-        default: dev/reference
 
 env:
   EDU_ASSIGNMENT: ${{ github.event.inputs.assignment || 'SWB-04' }}
-  EDU_SUBMISSION: ${{ github.event.inputs.submission || 'dev/reference' }}
-  BUILD_DIR: build-${{ github.event.inputs.submission || 'dev-reference' }}
 
 jobs:
   lint:
@@ -31,8 +25,8 @@ jobs:
       - name: Install cpplint
         run: pip install cpplint
 
-      - name: Run cpplint
-        run: ./scripts/lint.sh "$EDU_ASSIGNMENT" ignored "$EDU_SUBMISSION"
+      - name: Run cpplint on all submissions
+        run: ./scripts/lint.sh "$EDU_ASSIGNMENT"
 
   build:
     name: Build
@@ -44,14 +38,14 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake g++ clang
 
-      - name: Build submission
-        run: ./scripts/build.sh "$EDU_ASSIGNMENT" ignored "$EDU_SUBMISSION"
+      - name: Build all student binaries
+        run: ./scripts/build.sh "$EDU_ASSIGNMENT"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BUILD_DIR }}
-          path: build/
+          name: build-${{ env.EDU_ASSIGNMENT }}
+          path: build/${{ env.EDU_ASSIGNMENT }}
 
   test:
     name: Test
@@ -66,10 +60,8 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.BUILD_DIR }}
-          path: build/
+          name: build-${{ env.EDU_ASSIGNMENT }}
+          path: build/${{ env.EDU_ASSIGNMENT }}
 
-      - name: Run Google Test via CTest
-        run: |
-          test_dir="build/${EDU_SUBMISSION//\//-}"
-          ctest --test-dir "$test_dir" --output-on-failure
+      - name: Run Google Test for every submission
+        run: ctest --test-dir "build/$EDU_ASSIGNMENT" --output-on-failure

@@ -5,18 +5,17 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 ASSIGNMENT="${1:-SWB-04}"
-STUDENT="${2:-example-student}"
-SUBMISSION="${3:-}"
+STUDENT_FILTER="${2:-}"
+BUILD_DIR="${ROOT_DIR}/build/${ASSIGNMENT}"
 
-if [[ -n "$SUBMISSION" ]]; then
-    BUILD_DIR="${ROOT_DIR}/build/${SUBMISSION//\//-}"
+"${ROOT_DIR}/scripts/build.sh" "$ASSIGNMENT"
+
+if [[ -n "$STUDENT_FILTER" ]]; then
+    echo "Running tests for submission id: ${STUDENT_FILTER}"
+    ctest --test-dir "$BUILD_DIR" -R "_${STUDENT_FILTER}$" --output-on-failure
 else
-    BUILD_DIR="${ROOT_DIR}/build/${ASSIGNMENT}/${STUDENT}"
+    echo "Running tests for all submissions in assignment=${ASSIGNMENT}"
+    ctest --test-dir "$BUILD_DIR" --output-on-failure
 fi
 
-"${ROOT_DIR}/scripts/build.sh" "$ASSIGNMENT" "$STUDENT" "$SUBMISSION"
-
-echo "Running tests for assignment=${ASSIGNMENT} in $BUILD_DIR"
-ctest --test-dir "$BUILD_DIR" --output-on-failure
-
-echo "All tests passed."
+echo "All selected tests passed."

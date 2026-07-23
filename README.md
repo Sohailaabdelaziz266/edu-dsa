@@ -19,7 +19,7 @@ edu-dsa/
 │       ├── inc/
 │       └── src/
 ├── tests/                       # Shared automated tests (run in CI)
-│   └── SWB-04/                  # Google Test suites for assignment SWB-04
+│   └── SWB-04/                  # One Google Test suite per assignment
 ├── scripts/                     # lint, build, and test helpers
 └── .github/workflows/ci.yml     # CI pipeline
 ```
@@ -29,59 +29,75 @@ Every submission directory must contain:
 - `inc/` — header files (`.h`)
 - `src/` — implementation files (`.c`)
 
+## Build model
+
+There is **one shared test suite** per assignment under `tests/<assignment>/`.
+
+Each submission gets its **own compiled library and test binary**:
+
+```
+tests/SWB-04/test_list.cpp          # shared test source
+        │
+        ├── test_list_example-student  → links submission_example-student
+        └── test_list_dev-reference    → links submission_dev-reference
+```
+
+CMake auto-discovers every `SWB-XX/<student-name>/` directory and also includes extra submissions from `EDU_EXTRA_SUBMISSIONS` (default: `dev/reference`).
+
 ## CI pipeline
 
 GitHub Actions runs three sequential stages:
 
-1. **Lint** — [cpplint](https://github.com/cpplint/cpplint) (Google style) on the submission
-2. **Build** — CMake compile of the selected submission
-3. **Test** — [Google Test](https://github.com/google/googletest) via CTest
+1. **Lint** — [cpplint](https://github.com/cpplint/cpplint) on every submission
+2. **Build** — one library and one test binary per submission
+3. **Test** — [Google Test](https://github.com/google/googletest) via CTest for every submission
 
-Default CI target on push/PR:
-
-- Assignment tests: `SWB-04`
-- Submission: `dev/reference`
-
-You can also trigger CI manually (**Actions → CI → Run workflow**) and pass:
-
-- `assignment` — which test suite to run (e.g. `SWB-04`)
-- `submission` — which code to build (e.g. `SWB-04/john-doe` or `dev/reference`)
+Default CI target on push/PR: assignment `SWB-04`, all discovered submissions.
 
 ## Local development
 
 Install `cmake`, `g++`, `clang`, and `cpplint` (`pip install cpplint`), then:
 
 ```bash
-# Lint a student submission
+# Lint all submissions for an assignment
+./scripts/lint.sh SWB-04
+
+# Lint one student
 ./scripts/lint.sh SWB-04 john-doe
 
-# Build and test a student submission
-./scripts/test.sh SWB-04 john-doe
+# Build all student binaries and run all tests
+./scripts/test.sh SWB-04
 
-# Build and test the instructor reference against SWB-04 tests
-./scripts/test.sh SWB-04 ignored dev/reference
+# Build all, but run tests for one submission only
+./scripts/test.sh SWB-04 example-student
 ```
 
 Or with CMake directly:
 
 ```bash
-cmake -S . -B build \
-  -DEDU_ASSIGNMENT=SWB-04 \
-  -DEDU_SUBMISSION=dev/reference
+cmake -S . -B build/SWB-04 -DEDU_ASSIGNMENT=SWB-04
+cmake --build build/SWB-04 --parallel
+ctest --test-dir build/SWB-04 --output-on-failure
+```
 
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
+Build a subset of submissions:
+
+```bash
+cmake -S . -B build/SWB-04 \
+  -DEDU_ASSIGNMENT=SWB-04 \
+  -DEDU_STUDENTS="example-student;dev-reference"
 ```
 
 ## Adding a new assignment
 
 1. Create `SWB-XX/` at the repo root.
 2. Add student folders under it, each with `inc/` and `src/`.
-3. Add matching Google Test files under `tests/SWB-XX/` (e.g. `test_*.cpp`).
-4. Trigger CI with `assignment=SWB-XX` and the desired `submission` path.
+3. Add one shared Google Test file under `tests/SWB-XX/` (e.g. `test_*.cpp`).
+4. Trigger CI with `assignment=SWB-XX`.
 
 ## Adding a student submission
 
 1. Create `SWB-XX/<student-name>/inc` and `SWB-XX/<student-name>/src`.
 2. Implement the required headers and source files for that assignment.
-3. Run `./scripts/test.sh SWB-XX <student-name>` locally before pushing.
+3. Rebuild — CMake will automatically create `submission_<student-name>` and `test_list_<student-name>`.
+4. Run `./scripts/test.sh SWB-XX <student-name>` locally before pushing.
