@@ -15,7 +15,7 @@ if [[ -n "${EDU_STUDENTS:-}" ]]; then
 
 
 else
-    make test MAIN_DIR="${ASSIGNMENT}
+    make test MAIN_DIR="${ASSIGNMENT}"
 fi
 
 echo "Build and test preparation succeeded."
