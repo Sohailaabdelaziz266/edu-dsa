@@ -5,63 +5,19 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  workflow_dispatch:
-    inputs:
-      assignment:
-        description: Assignment id used to select tests (e.g. SWB-04)
-        required: true
-        default: SWB-04
-
-env:
-  EDU_ASSIGNMENT: ${{ github.event.inputs.assignment || 'SWB-04' }}
 
 jobs:
-  lint:
-    name: Lint
+  run-assignment:
+    name: Run Assignment Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install cpplint
-        run: pip install cpplint
-
-      - name: Run cpplint on all submissions
-        run: ./scripts/lint.sh "$EDU_ASSIGNMENT"
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@v4
-
+      
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake g++ clang
+        run: sudo apt-get update && sudo apt-get install -y g++ make libgtest-dev python3-pip
 
-      - name: Build all student binaries
-        run: ./scripts/build.sh "$EDU_ASSIGNMENT"
+      - name: Run Lint
+        run: ./scripts/lint.sh "SWB-04"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ env.EDU_ASSIGNMENT }}
-          path: build/${{ env.EDU_ASSIGNMENT }}
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-${{ env.EDU_ASSIGNMENT }}
-          path: build/${{ env.EDU_ASSIGNMENT }}
-
-      - name: Run Google Test for every submission
-        run: ctest --test-dir "build/$EDU_ASSIGNMENT" --output-on-failure
+      - name: Run Build and Tests via Makefile
+        run: ./scripts/build.sh "SWB-04"
