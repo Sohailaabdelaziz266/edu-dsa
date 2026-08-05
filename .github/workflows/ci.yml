@@ -5,19 +5,51 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      assignment:
+        description: Assignment id used to select tests (e.g. SWB-04)
+        required: true
+        default: SWB-04
+
+env:
+  EDU_ASSIGNMENT: ${{ github.event.inputs.assignment || 'SWB-04' }}
 
 jobs:
-  run-assignment:
-    name: Run Assignment Checks
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Install cpplint
+        run: pip install cpplint
+
+      - name: Run cpplint on all submissions
+        run: ./scripts/lint.sh "$EDU_ASSIGNMENT"
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y g++ make libgtest-dev python3-pip
+        run: sudo apt-get update && sudo apt-get install -y g++ make libgtest-dev
 
-      - name: Run Lint
-        run: ./scripts/lint.sh "SWB-04"
+      - name: Build assignment
+        run: EDU_STUDENTS=1 ./scripts/build.sh "$EDU_ASSIGNMENT" "sohila"
 
-      - name: Run Build and Tests via Makefile
-        run: ./scripts/build.sh "SWB-04"
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y g++ make libgtest-dev
+
+      - name: Run tests
+        run: EDU_STUDENTS=1 ./scripts/test.sh "$EDU_ASSIGNMENT" "sohila"
