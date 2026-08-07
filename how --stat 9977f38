@@ -1,0 +1,14 @@
+[33m9977f38[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Simplify workflow to use direct Makefile scripts
+[33m2482547[m Fix missing quotes in build.sh script
+[33m43d94d2[m Fix cpplint style, indents and header guard format
+[33m934ced0[m Add copyright and guards to static_array.h
+[33m7c72ab9[m Remove unused nour folder
+[33m83d70d1[m Add folders with uppercase SWB-04 and SWB-05
+[33mfbaf440[m Remove old folders temporarily
+[33m0290d16[m Rename assignment folders to uppercase SWB-04 and SWB-05
+[33m1c1782c[m Update scripts and changes
+[33mc79dfb0[m Add my updates
+[33m0dc1d70[m Introduce building system
+[33m9675e7f[m Refactor CMake configuration and CI pipeline for improved submission handling
+[33m86c3867[m Initial Commit
+[33m3d88b56[m Add initial README for edu-dsa project
