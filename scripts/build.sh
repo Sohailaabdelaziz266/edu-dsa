@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 ASSIGNMENT="${1:-SWB-04}"
-STUDENT_FILTER="${2:-}"
+STUDENT_FILTER="${2}"
 
 echo "Building assignment=${ASSIGNMENT} using Makefile"
 
