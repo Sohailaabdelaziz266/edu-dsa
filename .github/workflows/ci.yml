@@ -39,7 +39,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y g++ make libgtest-dev
 
       - name: Build assignment
-        run: EDU_STUDENTS=1 ./scripts/build.sh "$EDU_ASSIGNMENT" "sohila"
+        run: ./scripts/build.sh "$EDU_ASSIGNMENT"
 
   test:
     name: Test
@@ -52,4 +52,4 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y g++ make libgtest-dev
 
       - name: Run tests
-        run: EDU_STUDENTS=1 ./scripts/test.sh "$EDU_ASSIGNMENT" "sohila"
+        run: ./scripts/test.sh "$EDU_ASSIGNMENT"
