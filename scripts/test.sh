@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-ASSIGNMENT="${1:-SWB-04}"
+ASSIGNMENT="${1:?Error: Assignment argument is required}"
 STUDENT_FILTER="${2:-}"
 
 
